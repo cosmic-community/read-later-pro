@@ -303,7 +303,6 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
   ): string {
     return Object.entries(groupedArticles).map(([groupName, articles]) => {
       const articlesHTML = articles.map(article => {
-        // Fix: Add proper null checks for metadata to prevent TypeScript errors
         const articleMetadata = article.metadata
         if (!articleMetadata) {
           return `
