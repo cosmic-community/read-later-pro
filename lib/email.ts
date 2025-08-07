@@ -299,23 +299,38 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
   ): string {
     return Object.entries(groupedArticles).map(([groupName, articles]) => {
       const articlesHTML = articles.map(article => {
-        const tags = Array.isArray(article.metadata?.tags) ? article.metadata.tags : []
+        // Fix: Add proper null checks for metadata
+        const articleMetadata = article.metadata
+        if (!articleMetadata) {
+          return `
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
+              <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">
+                <a href="#" style="color: #1f2937; text-decoration: none;" target="_blank">
+                  ${article.title || 'Untitled'}
+                </a>
+              </h4>
+            </div>
+          `
+        }
+
+        const tags = Array.isArray(articleMetadata.tags) ? articleMetadata.tags : []
         const tagsHTML = tags.length > 0 
           ? `<div style="margin-top: 8px;">
                ${tags.map(tag => `<span style="background: #e5e7eb; color: #374151; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">${tag}</span>`).join('')}
              </div>`
           : ''
 
-        const descriptionHTML = user.metadata?.include_summaries && article.metadata?.description
-          ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 8px 0 0 0;">${article.metadata.description}</p>`
+        const userMetadata = user.metadata
+        const descriptionHTML = userMetadata && userMetadata.include_summaries && articleMetadata.description
+          ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 8px 0 0 0;">${articleMetadata.description}</p>`
           : ''
 
-        const readTime = article.metadata?.estimated_read_time 
-          ? `<span style="color: #9ca3af; font-size: 12px;"> • ${article.metadata.estimated_read_time} min read</span>`
+        const readTime = articleMetadata.estimated_read_time 
+          ? `<span style="color: #9ca3af; font-size: 12px;"> • ${articleMetadata.estimated_read_time} min read</span>`
           : ''
 
-        const articleUrl = article.metadata?.url || ''
-        const userEmail = user.metadata?.email || ''
+        const articleUrl = articleMetadata.url || ''
+        const userEmail = userMetadata ? userMetadata.email : ''
         const articleId = article.id || ''
         
         // Only create tracking URL if we have valid article ID, user email, and article URL
@@ -323,7 +338,7 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
           ? `${this.baseUrl}/track/click?article=${encodeURIComponent(articleId)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
           : articleUrl
 
-        const domain = article.metadata?.domain || (articleUrl ? ((() => {
+        const domain = articleMetadata.domain || (articleUrl ? ((() => {
           try {
             return new URL(articleUrl).hostname
           } catch {
@@ -335,7 +350,7 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
           <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
             <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">
               <a href="${trackingUrl}" style="color: #1f2937; text-decoration: none;" target="_blank">
-                ${article.metadata?.title || article.title || 'Untitled'}
+                ${articleMetadata.title || article.title || 'Untitled'}
               </a>
             </h4>
             <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
