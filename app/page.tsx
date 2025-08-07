@@ -4,6 +4,7 @@ import ArticleForm from '@/components/ArticleForm'
 import ArticleList from '@/components/ArticleList'
 import QuickStats from '@/components/QuickStats'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import TestEmailButton from '@/components/TestEmailButton'
 
 export default async function Home() {
   return (
@@ -54,6 +55,21 @@ export default async function Home() {
                 <button className="btn btn-secondary w-full justify-start">
                   📋 Shared Lists
                 </button>
+              </div>
+            </div>
+            
+            {/* Test Email Section */}
+            <div className="card p-6">
+              <h3 className="text-lg font-semibold mb-4">Email Testing</h3>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Send a test email to verify your email configuration and see how your digest will look.
+                </p>
+                <TestEmailButton 
+                  variant="primary"
+                  userEmail="test@example.com"
+                  className="w-full"
+                />
               </div>
             </div>
             

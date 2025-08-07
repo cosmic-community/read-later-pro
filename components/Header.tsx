@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Search, Settings, User, Bell } from 'lucide-react'
+import TestEmailButton from './TestEmailButton'
 
 export default function Header() {
   return (
@@ -30,6 +31,15 @@ export default function Header() {
           
           {/* Navigation */}
           <nav className="flex items-center space-x-2">
+            {/* Test Email Button */}
+            <div className="hidden lg:block">
+              <TestEmailButton 
+                variant="ghost" 
+                size="sm"
+                userEmail="test@example.com"
+              />
+            </div>
+            
             {/* Mobile Search */}
             <button className="btn btn-ghost p-2 md:hidden">
               <Search className="h-4 w-4" />
