@@ -299,32 +299,36 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
   ): string {
     return Object.entries(groupedArticles).map(([groupName, articles]) => {
       const articlesHTML = articles.map(article => {
-        const tags = Array.isArray(article.metadata.tags) ? article.metadata.tags : []
+        const tags = Array.isArray(article.metadata?.tags) ? article.metadata.tags : []
         const tagsHTML = tags.length > 0 
           ? `<div style="margin-top: 8px;">
                ${tags.map(tag => `<span style="background: #e5e7eb; color: #374151; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">${tag}</span>`).join('')}
              </div>`
           : ''
 
-        const descriptionHTML = user.metadata.include_summaries && article.metadata.description
+        const descriptionHTML = user.metadata?.include_summaries && article.metadata?.description
           ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 8px 0 0 0;">${article.metadata.description}</p>`
           : ''
 
-        const readTime = article.metadata.estimated_read_time 
+        const readTime = article.metadata?.estimated_read_time 
           ? `<span style="color: #9ca3af; font-size: 12px;"> • ${article.metadata.estimated_read_time} min read</span>`
           : ''
 
-        const trackingUrl = `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id)}&user=${encodeURIComponent(user.metadata.email)}&url=${encodeURIComponent(article.metadata.url)}`
+        const articleUrl = article.metadata?.url || ''
+        const userEmail = user.metadata?.email || ''
+        const trackingUrl = `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
+
+        const domain = article.metadata?.domain || (articleUrl ? new URL(articleUrl).hostname : '')
 
         return `
           <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
             <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">
               <a href="${trackingUrl}" style="color: #1f2937; text-decoration: none;" target="_blank">
-                ${article.metadata.title || article.title}
+                ${article.metadata?.title || article.title}
               </a>
             </h4>
             <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
-              ${article.metadata.domain || new URL(article.metadata.url).hostname}${readTime}
+              ${domain}${readTime}
             </div>
             ${descriptionHTML}
             ${tagsHTML}
