@@ -316,10 +316,11 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
 
         const articleUrl = article.metadata?.url || ''
         const userEmail = user.metadata?.email || ''
+        const articleId = article.id || ''
         
         // Only create tracking URL if we have valid article ID, user email, and article URL
-        const trackingUrl = article.id && userEmail && articleUrl 
-          ? `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
+        const trackingUrl = articleId && userEmail && articleUrl 
+          ? `${this.baseUrl}/track/click?article=${encodeURIComponent(articleId)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
           : articleUrl
 
         const domain = article.metadata?.domain || (articleUrl ? ((() => {
