@@ -342,19 +342,22 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
         const userEmail = userMetadata?.email || ''
         const articleId = article.id || ''
         
-        // Fix: Only create tracking URL if we have valid data to prevent undefined index errors
+        // Fix: Only create tracking URL if we have valid, non-empty data
         const trackingUrl = articleId && userEmail && articleUrl 
           ? `${this.baseUrl}/track/click?article=${encodeURIComponent(articleId)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
           : articleUrl
 
-        // Fix: Safe domain extraction with proper error handling
-        const domain = articleMetadata.domain || (articleUrl ? ((): string => {
+        // Fix: Safe domain extraction with proper null checks and error handling
+        let domain = ''
+        if (articleMetadata.domain) {
+          domain = articleMetadata.domain
+        } else if (articleUrl) {
           try {
-            return new URL(articleUrl).hostname
+            domain = new URL(articleUrl).hostname
           } catch {
-            return ''
+            domain = ''
           }
-        })() : '')
+        }
 
         return `
           <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
