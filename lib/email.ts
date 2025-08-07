@@ -303,7 +303,7 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
   ): string {
     return Object.entries(groupedArticles).map(([groupName, articles]) => {
       const articlesHTML = articles.map(article => {
-        // Fix: Add proper null checks for metadata
+        // Fix: Add proper null checks for metadata to prevent TypeScript errors
         const articleMetadata = article.metadata
         if (!articleMetadata) {
           return `
@@ -337,18 +337,19 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
         const userEmail = userMetadata?.email || ''
         const articleId = article.id || ''
         
-        // Only create tracking URL if we have valid article ID, user email, and article URL
+        // Fix: Only create tracking URL if we have valid data to prevent undefined index errors
         const trackingUrl = articleId && userEmail && articleUrl 
           ? `${this.baseUrl}/track/click?article=${encodeURIComponent(articleId)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
           : articleUrl
 
-        const domain = articleMetadata.domain || (articleUrl ? ((() => {
+        // Fix: Safe domain extraction with proper error handling
+        const domain = articleMetadata.domain || (articleUrl ? ((): string => {
           try {
             return new URL(articleUrl).hostname
           } catch {
             return ''
           }
-        })()) : '')
+        })() : '')
 
         return `
           <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
