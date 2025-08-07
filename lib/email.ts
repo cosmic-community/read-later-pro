@@ -82,7 +82,7 @@ export class EmailService {
     const text = this.generateDigestText(user, articles)
 
     return this.sendEmail({
-      to: user.metadata.email,
+      to: user.metadata?.email || '',
       subject,
       html,
       text
@@ -127,36 +127,36 @@ export class EmailService {
     articles: Article[],
     isTest = false
   ): string {
-    const userName = user.metadata.name || user.title || 'Reader'
+    const userName = user.metadata?.name || user.title || 'Reader'
     const testBadge = isTest ? '<div style="background: #ef4444; color: white; padding: 8px 16px; border-radius: 4px; font-weight: bold; margin-bottom: 24px; text-align: center;">TEST EMAIL</div>' : ''
     
     const articlesHTML = articles.map(article => {
-      const tags = Array.isArray(article.metadata.tags) ? article.metadata.tags : []
+      const tags = Array.isArray(article.metadata?.tags) ? article.metadata.tags : []
       const tagsHTML = tags.length > 0 
         ? `<div style="margin-top: 8px;">
              ${tags.map(tag => `<span style="background: #e5e7eb; color: #374151; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">${tag}</span>`).join('')}
            </div>`
         : ''
 
-      const descriptionHTML = user.metadata.include_summaries && article.metadata.description
+      const descriptionHTML = user.metadata?.include_summaries && article.metadata?.description
         ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 8px 0 0 0;">${article.metadata.description}</p>`
         : ''
 
-      const readTime = article.metadata.estimated_read_time 
+      const readTime = article.metadata?.estimated_read_time 
         ? `<span style="color: #9ca3af; font-size: 12px;"> • ${article.metadata.estimated_read_time} min read</span>`
         : ''
 
-      const trackingUrl = `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id)}&user=${encodeURIComponent(user.metadata.email)}&url=${encodeURIComponent(article.metadata.url)}`
+      const trackingUrl = `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id || '')}&user=${encodeURIComponent(user.metadata?.email || '')}&url=${encodeURIComponent(article.metadata?.url || '')}`
 
       return `
         <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
           <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #1f2937;">
             <a href="${trackingUrl}" style="color: #1f2937; text-decoration: none;" target="_blank">
-              ${article.metadata.title || article.title}
+              ${article.metadata?.title || article.title}
             </a>
           </h3>
           <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
-            ${article.metadata.domain || new URL(article.metadata.url).hostname}${readTime}
+            ${article.metadata?.domain || (article.metadata?.url ? new URL(article.metadata.url).hostname : '')}${readTime}
           </div>
           ${descriptionHTML}
           ${tagsHTML}
@@ -164,7 +164,7 @@ export class EmailService {
       `
     }).join('')
 
-    const groupedArticles = this.groupArticles(articles, user.metadata.email_grouping)
+    const groupedArticles = this.groupArticles(articles, user.metadata?.email_grouping)
     const groupedHTML = this.generateGroupedHTML(groupedArticles, user)
 
     return `
@@ -186,7 +186,7 @@ export class EmailService {
               Hi ${userName}! Here are your ${articles.length} saved article${articles.length > 1 ? 's' : ''} ready to read.
             </p>
             
-            ${user.metadata.email_grouping && user.metadata.email_grouping !== 'mixed' ? groupedHTML : articlesHTML}
+            ${user.metadata?.email_grouping && user.metadata.email_grouping !== 'mixed' ? groupedHTML : articlesHTML}
             
             <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
               <a href="${this.baseUrl}" style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-block;">
@@ -199,9 +199,9 @@ export class EmailService {
             <p>
               Sent by <a href="${this.baseUrl}" style="color: #3b82f6; text-decoration: none;">Read Later Pro</a>
               <br>
-              <a href="${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadata.email)}" style="color: #9ca3af; text-decoration: none;">Unsubscribe</a>
+              <a href="${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadata?.email || '')}" style="color: #9ca3af; text-decoration: none;">Unsubscribe</a>
             </p>
-            <img src="${this.baseUrl}/track/open?user=${encodeURIComponent(user.metadata.email)}" width="1" height="1" style="display: block; margin: 0 auto;" alt="">
+            <img src="${this.baseUrl}/track/open?user=${encodeURIComponent(user.metadata?.email || '')}" width="1" height="1" style="display: block; margin: 0 auto;" alt="">
           </div>
         </body>
       </html>
@@ -213,22 +213,25 @@ export class EmailService {
     articles: Article[],
     isTest = false
   ): string {
-    const userName = user.metadata.name || user.title || 'Reader'
+    const userName = user.metadata?.name || user.title || 'Reader'
     const testPrefix = isTest ? '[TEST EMAIL]\n\n' : ''
     
     const articlesText = articles.map((article, index) => {
-      const tags = Array.isArray(article.metadata.tags) ? article.metadata.tags : []
+      const tags = Array.isArray(article.metadata?.tags) ? article.metadata.tags : []
       const tagsText = tags.length > 0 ? `\nTags: ${tags.join(', ')}` : ''
-      const descriptionText = user.metadata.include_summaries && article.metadata.description
+      const descriptionText = user.metadata?.include_summaries && article.metadata?.description
         ? `\n${article.metadata.description}`
         : ''
-      const readTime = article.metadata.estimated_read_time 
+      const readTime = article.metadata?.estimated_read_time 
         ? ` (${article.metadata.estimated_read_time} min read)`
         : ''
 
-      return `${index + 1}. ${article.metadata.title || article.title}${readTime}
-   ${article.metadata.url}
-   Source: ${article.metadata.domain || new URL(article.metadata.url).hostname}${descriptionText}${tagsText}
+      const url = article.metadata?.url || ''
+      const domain = article.metadata?.domain || (url ? new URL(url).hostname : '')
+
+      return `${index + 1}. ${article.metadata?.title || article.title}${readTime}
+   ${url}
+   Source: ${domain}${descriptionText}${tagsText}
 `
     }).join('\n')
 
@@ -244,7 +247,7 @@ View all your articles: ${this.baseUrl}
 
 ---
 Sent by Read Later Pro (${this.baseUrl})
-Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadata.email)}
+Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadata?.email || '')}
 `
   }
 
@@ -257,7 +260,7 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
       const grouped: { [key: string]: Article[] } = {}
       
       articles.forEach(article => {
-        const tags = Array.isArray(article.metadata.tags) ? article.metadata.tags : []
+        const tags = Array.isArray(article.metadata?.tags) ? article.metadata.tags : []
         const category = tags.length > 0 ? tags[0] : 'Uncategorized'
         
         if (!grouped[category]) {
@@ -273,7 +276,8 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
       const grouped: { [key: string]: Article[] } = {}
       
       articles.forEach(article => {
-        const date = new Date(article.metadata.date_added)
+        const dateAdded = article.metadata?.date_added
+        const date = dateAdded ? new Date(dateAdded) : new Date()
         const dateKey = date.toLocaleDateString('en-US', { 
           weekday: 'long', 
           year: 'numeric', 
@@ -321,7 +325,7 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
           : ''
 
         const userMetadata = user.metadata
-        const descriptionHTML = userMetadata && userMetadata.include_summaries && articleMetadata.description
+        const descriptionHTML = userMetadata?.include_summaries && articleMetadata.description
           ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 8px 0 0 0;">${articleMetadata.description}</p>`
           : ''
 
@@ -330,7 +334,7 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
           : ''
 
         const articleUrl = articleMetadata.url || ''
-        const userEmail = userMetadata ? userMetadata.email : ''
+        const userEmail = userMetadata?.email || ''
         const articleId = article.id || ''
         
         // Only create tracking URL if we have valid article ID, user email, and article URL
