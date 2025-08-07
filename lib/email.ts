@@ -316,15 +316,25 @@ Unsubscribe: ${this.baseUrl}/unsubscribe?email=${encodeURIComponent(user.metadat
 
         const articleUrl = article.metadata?.url || ''
         const userEmail = user.metadata?.email || ''
-        const trackingUrl = `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
+        
+        // Only create tracking URL if we have valid article ID, user email, and article URL
+        const trackingUrl = article.id && userEmail && articleUrl 
+          ? `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
+          : articleUrl
 
-        const domain = article.metadata?.domain || (articleUrl ? new URL(articleUrl).hostname : '')
+        const domain = article.metadata?.domain || (articleUrl ? ((() => {
+          try {
+            return new URL(articleUrl).hostname
+          } catch {
+            return ''
+          }
+        })()) : '')
 
         return `
           <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
             <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">
               <a href="${trackingUrl}" style="color: #1f2937; text-decoration: none;" target="_blank">
-                ${article.metadata?.title || article.title}
+                ${article.metadata?.title || article.title || 'Untitled'}
               </a>
             </h4>
             <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
