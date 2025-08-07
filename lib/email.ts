@@ -146,7 +146,13 @@ export class EmailService {
         ? `<span style="color: #9ca3af; font-size: 12px;"> • ${article.metadata.estimated_read_time} min read</span>`
         : ''
 
-      const trackingUrl = `${this.baseUrl}/track/click?article=${encodeURIComponent(article.id || '')}&user=${encodeURIComponent(user.metadata?.email || '')}&url=${encodeURIComponent(article.metadata?.url || '')}`
+      const articleId = article.id || ''
+      const userEmail = user.metadata?.email || ''
+      const articleUrl = article.metadata?.url || ''
+      
+      const trackingUrl = articleId && userEmail && articleUrl 
+        ? `${this.baseUrl}/track/click?article=${encodeURIComponent(articleId)}&user=${encodeURIComponent(userEmail)}&url=${encodeURIComponent(articleUrl)}`
+        : articleUrl
 
       return `
         <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white;">
